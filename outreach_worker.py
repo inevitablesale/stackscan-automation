@@ -62,12 +62,21 @@ def get_supabase_client():
 
 
 def get_smtp_fleet() -> list[dict]:
-    """Load SMTP accounts from environment variable."""
+    """
+    Load SMTP accounts from environment variable.
+
+    Note: For production deployments, use Render's secret environment variables
+    or a dedicated secret management service to store SMTP credentials securely.
+    Never log or expose the SMTP_ACCOUNTS_JSON value.
+    """
     smtp_json = os.getenv("SMTP_ACCOUNTS_JSON", "[]")
     try:
         fleet = json.loads(smtp_json)
         if not fleet:
             print("[OUTREACH] Warning: No SMTP accounts configured")
+        else:
+            # Log inbox count without exposing credentials
+            print(f"[OUTREACH] Loaded {len(fleet)} SMTP accounts")
         return fleet
     except json.JSONDecodeError as e:
         print(f"[ERROR] Invalid SMTP_ACCOUNTS_JSON: {e}")
@@ -115,20 +124,23 @@ def fetch_leads(supabase) -> list[dict]:
         supabase: Supabase client instance
 
     Returns:
-        List of lead records
+        List of lead records with valid emails
     """
     query = (
         supabase.table(OUTREACH_TABLE)
         .select("*")
         .eq("hubspot_detected", True)
-        .neq("emails", "[]")
         .is_("emailed", "null")
         .limit(DAILY_LIMIT)
         .execute()
     )
 
-    leads = query.data or []
-    print(f"[OUTREACH] Loaded {len(leads)} available leads")
+    # Filter to only leads with non-empty email arrays
+    leads = [
+        lead for lead in (query.data or [])
+        if lead.get("emails") and len(lead.get("emails", [])) > 0
+    ]
+    print(f"[OUTREACH] Loaded {len(leads)} available leads with emails")
     return leads
 
 

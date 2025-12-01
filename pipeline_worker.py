@@ -71,8 +71,19 @@ def get_apify_client():
 
 def load_categories() -> list[str]:
     """Load categories from the JSON config file."""
-    with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(CATEGORIES_FILE, "r", encoding="utf-8") as f:
+            categories = json.load(f)
+            if not categories:
+                raise ValueError("Categories file is empty")
+            return categories
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"Categories file not found: {CATEGORIES_FILE}. "
+            "Please ensure config/categories-250.json exists."
+        )
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in categories file: {e}")
 
 
 def pick_today_category(categories: list[str]) -> str:
