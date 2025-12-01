@@ -136,12 +136,21 @@ The scanner looks for these HubSpot signatures:
 
 ## Email Filtering
 
-When HubSpot is detected, the scanner crawls the site for email addresses. Generic emails are automatically excluded:
+When HubSpot is detected, the scanner crawls the site for email addresses. The following emails are automatically excluded:
 
+### Generic Email Prefixes
 - info@, support@, admin@
 - hello@, sales@, contact@
 - help@, noreply@, webmaster@
 - office@, team@, general@
+
+### Disposable/Honeypot Domains
+The scanner filters out emails from disposable and honeypot email services (e.g., mailinator.com, guerrillamail.com, tempmail.net). The blocklist contains 5,500+ domains from multiple community-maintained sources.
+
+To update the blocklist:
+```bash
+python scripts/update_disposable_blocklist.py
+```
 
 ## CLI Options
 
