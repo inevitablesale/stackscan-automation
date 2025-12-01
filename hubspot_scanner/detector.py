@@ -146,6 +146,18 @@ class HubSpotDetector:
             "weight": 20,
             "description": "HubSpot CTA wrapper element",
         },
+        {
+            "name": "async-hubspot-comment",
+            "pattern": r"<!--\s*Start of Async HubSpot",
+            "weight": 30,
+            "description": "HubSpot async script HTML comment",
+        },
+        {
+            "name": "hs-cookie-banner",
+            "pattern": r'id\s*=\s*["\']?hs-eu-cookie-confirmation["\']?',
+            "weight": 20,
+            "description": "HubSpot cookie policy banner element",
+        },
     ]
 
     # HubSpot API endpoint patterns
@@ -272,16 +284,40 @@ class HubSpotDetector:
                 "weight": 30,
                 "description": "HubSpot hub/portal ID header",
             },
+            "x-powered-by": {
+                "weight": 30,
+                "description": "HubSpot powered-by header",
+                "value_pattern": r"hubspot",
+            },
         }
 
         for header, info in hubspot_headers.items():
-            if header.lower() in {k.lower() for k in headers}:
-                signals.append(
-                    {
-                        "name": f"header-{header}",
-                        "description": info["description"],
-                        "weight": info["weight"],
-                    }
-                )
+            # Find the header case-insensitively
+            header_value = None
+            for k, v in headers.items():
+                if k.lower() == header.lower():
+                    header_value = v
+                    break
+
+            if header_value is not None:
+                # Check if there's a value pattern to match
+                if "value_pattern" in info:
+                    if re.search(info["value_pattern"], header_value, re.IGNORECASE):
+                        signals.append(
+                            {
+                                "name": f"header-{header}",
+                                "description": info["description"],
+                                "weight": info["weight"],
+                            }
+                        )
+                else:
+                    # Header presence is enough
+                    signals.append(
+                        {
+                            "name": f"header-{header}",
+                            "description": info["description"],
+                            "weight": info["weight"],
+                        }
+                    )
 
         return signals

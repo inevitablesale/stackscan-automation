@@ -119,6 +119,9 @@ The scanner looks for these HubSpot signatures:
 - `track.hubspot.com` - Tracking endpoint
 - `js.hsforms.net` - HubSpot forms
 - `js.hscta.net` - Call-to-action scripts
+- `js.hs-banner.com` - HubSpot cookie banner script
+- `js.usemessages.com` - HubSpot conversations/chat widget
+- `js.hscollectedforms.net` - HubSpot collected forms
 
 ### COS (Content Optimization System)
 - `cdn2.hubspot.net` - HubSpot CDN
@@ -133,6 +136,17 @@ The scanner looks for these HubSpot signatures:
 ### Inline JavaScript
 - `_hsq` - HubSpot tracking queue
 - `hbspt.` - HubSpot JavaScript object
+
+### HTML & DOM Elements
+- `<!-- Start of Async HubSpot` - HubSpot async script HTML comment
+- `id="hs-eu-cookie-confirmation"` - HubSpot cookie policy banner element
+- `<meta name="generator" content="HubSpot">` - HubSpot generator meta tag
+
+### HTTP Headers
+- `X-Powered-By: HubSpot` - HubSpot CMS powered-by header
+- `X-HS-Hub-Id` - HubSpot hub/portal ID header
+- `X-HS-Content-Id` - HubSpot content ID header
+- `X-HS-Cache-Config` - HubSpot cache configuration header
 
 ## Email Filtering
 
