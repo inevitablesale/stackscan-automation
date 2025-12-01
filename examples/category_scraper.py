@@ -4,7 +4,7 @@ Category-based Google Places scraper using Apify.
 
 This script scrapes Google Places data for business categories using Apify's
 Google Places crawler. It processes one category at a time and collects up to
-1000 results per category.
+1000 results per category (configurable via --max-places).
 
 Usage:
     # Set your Apify token as an environment variable
@@ -18,6 +18,9 @@ Usage:
 
     # Run a specific category by name
     python category_scraper.py --category "accountant"
+
+    # Limit results per category
+    python category_scraper.py --max-places 500
 """
 
 import argparse
@@ -27,6 +30,11 @@ import sys
 from datetime import datetime
 
 from apify_client import ApifyClient
+
+
+# Configuration constants
+DEFAULT_MAX_PLACES = 1000
+DEFAULT_ACTOR_ID = "compass/crawler-google-places"
 
 
 # Business categories to scrape
@@ -308,13 +316,18 @@ def get_apify_token() -> str:
     return token
 
 
-def run_category(client: ApifyClient, category: str) -> list[dict]:
+def run_category(
+    client: ApifyClient,
+    category: str,
+    max_places: int = DEFAULT_MAX_PLACES,
+) -> list[dict]:
     """
     Run the Apify crawler for a single category.
 
     Args:
         client: The Apify client instance
         category: The business category to search for
+        max_places: Maximum number of places to crawl per category
 
     Returns:
         List of places data from the crawler
@@ -344,10 +357,10 @@ def run_category(client: ApifyClient, category: str) -> list[dict]:
         "reviewsFilterString": "",
         "reviewsOrigin": "all",
         "allPlacesNoSearchAction": "",
-        "maxCrawledPlacesPerSearch": 1000,
+        "maxCrawledPlacesPerSearch": max_places,
     }
 
-    run = client.actor("compass/crawler-google-places").call(run_input=payload)
+    run = client.actor(DEFAULT_ACTOR_ID).call(run_input=payload)
 
     dataset_items = list(client.dataset(run["defaultDatasetId"]).iterate_items())
     count = len(dataset_items)
@@ -357,12 +370,16 @@ def run_category(client: ApifyClient, category: str) -> list[dict]:
     return dataset_items
 
 
-def run_all_categories(client: ApifyClient) -> dict[str, list[dict]]:
+def run_all_categories(
+    client: ApifyClient,
+    max_places: int = DEFAULT_MAX_PLACES,
+) -> dict[str, list[dict]]:
     """
     Run the crawler for all categories.
 
     Args:
         client: The Apify client instance
+        max_places: Maximum number of places to crawl per category
 
     Returns:
         Dictionary mapping category names to their results
@@ -370,10 +387,10 @@ def run_all_categories(client: ApifyClient) -> dict[str, list[dict]]:
     all_results = {}
 
     for category in CATEGORIES:
-        items = run_category(client, category)
+        items = run_category(client, category, max_places)
 
-        if len(items) >= 1000:
-            print(f"Reached 1000 results for {category}. Switching to next category.")
+        if len(items) >= max_places:
+            print(f"Reached {max_places} results for {category}. Switching to next category.")
         else:
             print(f"{category} returned {len(items)}, but moving on anyway.")
 
@@ -385,6 +402,7 @@ def run_all_categories(client: ApifyClient) -> dict[str, list[dict]]:
 def run_single_category(
     client: ApifyClient,
     category: str,
+    max_places: int = DEFAULT_MAX_PLACES,
 ) -> dict[str, list[dict]]:
     """
     Run the crawler for a single category.
@@ -392,14 +410,15 @@ def run_single_category(
     Args:
         client: The Apify client instance
         category: The category to run
+        max_places: Maximum number of places to crawl
 
     Returns:
         Dictionary with the category and its results
     """
-    items = run_category(client, category)
+    items = run_category(client, category, max_places)
 
-    if len(items) >= 1000:
-        print(f"Reached 1000 results for {category}.")
+    if len(items) >= max_places:
+        print(f"Reached {max_places} results for {category}.")
     else:
         print(f"{category} returned {len(items)} results.")
 
@@ -455,6 +474,9 @@ Examples:
 
     # Save results to a specific file
     python category_scraper.py --output my_results.json
+
+    # Limit results per category
+    python category_scraper.py --max-places 500
         """,
     )
 
@@ -494,6 +516,13 @@ Examples:
         "--dry-run",
         action="store_true",
         help="Show what would be run without actually running",
+    )
+
+    parser.add_argument(
+        "--max-places",
+        type=int,
+        default=DEFAULT_MAX_PLACES,
+        help=f"Maximum places to crawl per category (default: {DEFAULT_MAX_PLACES})",
     )
 
     args = parser.parse_args()
@@ -549,9 +578,9 @@ Examples:
 
     # Run the scraper
     if categories_to_run == "all":
-        results = run_all_categories(client)
+        results = run_all_categories(client, args.max_places)
     else:
-        results = run_single_category(client, categories_to_run)
+        results = run_single_category(client, categories_to_run, args.max_places)
 
     # Save results
     save_results(results, args.output)
