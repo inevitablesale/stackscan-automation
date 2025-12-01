@@ -35,6 +35,7 @@ setup(
     entry_points={
         "console_scripts": [
             "hubspot-scanner=hubspot_scanner.cli:main",
+            "tech-scanner=hubspot_scanner.tech_cli:main",
         ],
     },
 )

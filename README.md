@@ -56,6 +56,112 @@ hubspot-scanner hubspot.com --no-emails
 hubspot-scanner hubspot.com --max-pages 20
 ```
 
+## Multi-Technology Scanner (NEW)
+
+The scanner now includes Wappalyzer-style detection for 40+ technologies, with scoring and automated email generation for outreach.
+
+### Technology Detection
+
+```bash
+# Scan a domain for all technologies
+tech-scanner example.com
+
+# Scan multiple domains
+tech-scanner shopify.com hubspot.com stripe.com
+
+# Save results with email generation
+tech-scanner -f domains.txt -o results.json
+
+# Skip email generation
+tech-scanner example.com --no-email
+
+# Custom consultant profile for emails
+tech-scanner example.com --name "Alex" --location "Austin, TX" --rate "\$100/hr"
+```
+
+### Python Library
+
+```python
+from hubspot_scanner import scan_technologies, score_technologies, generate_outreach_email
+
+# Scan a domain for technologies
+result = scan_technologies("example.com")
+print(f"Technologies: {result.technologies}")
+print(f"Top tech: {result.top_technology['name']} (score: {result.top_technology['score']})")
+
+# The generated email is ready to use
+if result.generated_email:
+    print(f"Subject: {result.generated_email['subject_lines'][0]}")
+    print(f"Body: {result.generated_email['email_body']}")
+```
+
+### Technology Scoring
+
+Technologies are scored by value/specialization (1-5 scale):
+
+| Score | Category | Examples |
+|-------|----------|----------|
+| 5 | Enterprise | Salesforce, HubSpot, Marketo, Segment, Magento, Pardot |
+| 4 | Ecommerce + Payments | Shopify, BigCommerce, Stripe, Klaviyo, Mixpanel |
+| 3 | Mainstream CMS + Marketing | WordPress, WooCommerce, Mailchimp, Intercom, Drift |
+| 2 | Infrastructure | AWS, Vercel, Netlify, Cloudflare |
+| 1 | Basic Analytics | Google Analytics, GA4, Heap, Hotjar |
+
+### Email Generation Output
+
+```json
+{
+  "domain": "example.com",
+  "technologies": ["Shopify", "Stripe", "Klaviyo", "Google Analytics"],
+  "scored_technologies": [
+    {"name": "Shopify", "score": 4, "category": "Ecommerce"},
+    {"name": "Stripe", "score": 4, "category": "Payment Processor"},
+    {"name": "Klaviyo", "score": 4, "category": "Email Marketing"},
+    {"name": "Google Analytics", "score": 1, "category": "Analytics"}
+  ],
+  "top_technology": {
+    "name": "Shopify",
+    "score": 4,
+    "category": "Ecommerce",
+    "recent_project": "rebuilt a Shopify checkout flow and fixed server-side tracking for Stripe + Klaviyo events."
+  },
+  "generated_email": {
+    "selected_technology": "Shopify",
+    "subject_lines": [
+      "Quick Shopify question",
+      "Your Shopify setup",
+      "Short-term Shopify help?"
+    ],
+    "email_body": "Hey there,\n\nI was looking at example.com and noticed you're using Shopify..."
+  }
+}
+```
+
+### Supported Technologies
+
+**Marketing & Sales:**
+- CRM: Salesforce, Zoho, Pipedrive
+- Marketing Automation: HubSpot, Marketo, Pardot, ActiveCampaign
+- Email: Klaviyo, Mailchimp, SendGrid
+- Live Chat: Intercom, Drift, Zendesk Chat, Freshchat
+
+**Ecommerce:**
+- Platforms: Shopify, WooCommerce, Magento, BigCommerce
+- Payments: Stripe, PayPal, Braintree, Square
+
+**Analytics & Testing:**
+- Analytics: Google Analytics, Mixpanel, Amplitude, Heap, Hotjar
+- A/B Testing: Optimizely, VWO, Google Optimize
+- CDP: Segment
+
+**Infrastructure:**
+- CMS: WordPress, Webflow
+- Hosting: AWS, Vercel, Netlify, Cloudflare
+
+---
+
+## HubSpot-Specific Scanner
+
 ### Python Library
 
 ```python
@@ -119,6 +225,9 @@ The scanner looks for these HubSpot signatures:
 - `track.hubspot.com` - Tracking endpoint
 - `js.hsforms.net` - HubSpot forms
 - `js.hscta.net` - Call-to-action scripts
+- `js.hs-banner.com` - HubSpot cookie banner script
+- `js.usemessages.com` - HubSpot conversations/chat widget
+- `js.hscollectedforms.net` - HubSpot collected forms
 
 ### COS (Content Optimization System)
 - `cdn2.hubspot.net` - HubSpot CDN
@@ -133,6 +242,17 @@ The scanner looks for these HubSpot signatures:
 ### Inline JavaScript
 - `_hsq` - HubSpot tracking queue
 - `hbspt.` - HubSpot JavaScript object
+
+### HTML & DOM Elements
+- `<!-- Start of Async HubSpot` - HubSpot async script HTML comment
+- `id="hs-eu-cookie-confirmation"` - HubSpot cookie policy banner element
+- `<meta name="generator" content="HubSpot">` - HubSpot generator meta tag
+
+### HTTP Headers
+- `X-Powered-By: HubSpot` - HubSpot CMS powered-by header
+- `X-HS-Hub-Id` - HubSpot hub/portal ID header
+- `X-HS-Content-Id` - HubSpot content ID header
+- `X-HS-Cache-Config` - HubSpot cache configuration header
 
 ## Email Filtering
 
