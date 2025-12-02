@@ -1,4 +1,4 @@
-# CloseSpark Tech Stack Scanner
+# Tech Stack Scanner
 
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -12,19 +12,21 @@ Wappalyzer-style domain scanner that detects **40+ technologies** across busines
 
 - **Multi-Technology Detection**: Detects 40+ technologies including HubSpot, Salesforce, Shopify, Stripe, and more
 - **Technology Scoring**: Scores each technology 1-5 based on value and specialization
-- **Persona-Based Email Generation**: Generates personalized outreach emails with distinct personas (Scott, Tracy, Willa)
+- **Persona-Based Email Generation**: Generates personalized outreach emails with configurable personas
 - **Multiple Email Variants**: 2-3 email variants per technology for A/B testing
 - **Variant Tracking**: Full metadata tracking for analytics (variant_id, persona, persona_email)
 - **Email Extraction**: Crawls sites to find non-generic business email addresses
 - **Generic Email Filtering**: Automatically excludes info@, support@, admin@, hello@, sales@, etc.
 - **JSON Output**: Structured output with technologies, scores, and generated emails
 - **CLI & Library**: Use as command-line tool or import as Python library
+- **Automated Pipeline**: Daily worker for Google Places scraping, tech scanning, and outreach
+- **Calendly Integration**: Track meeting bookings and conversion analytics
 
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/closespark/stackscan-automation.git
+# Clone the repository (replace with your fork URL)
+git clone https://github.com/<your-username>/stackscan-automation.git
 cd stackscan-automation
 
 # Install dependencies
@@ -62,12 +64,12 @@ result = scan_technologies("example.com")
 print(f"Technologies: {result.technologies}")
 print(f"Top tech: {result.top_technology['name']} (score: {result.top_technology['score']})")
 
-# Generate persona-based email
+# Generate persona-based email (use your configured persona email)
 email = generate_persona_outreach_email(
     domain="example.com",
     main_tech="Shopify",
     supporting_techs=["Stripe", "Klaviyo"],
-    from_email="scott@closespark.co"
+    from_email="persona@yourdomain.com"
 )
 print(f"Subject: {email.subject}")
 print(f"Persona: {email.persona} ({email.persona_role})")
@@ -77,19 +79,25 @@ print(f"Body:\n{email.body}")
 
 ## Persona System
 
-The outreach system uses three distinct personas tied to SMTP sender addresses:
+The outreach system uses configurable personas tied to SMTP sender addresses. Personas are defined in `hubspot_scanner/email_generator.py` and must be customized for your organization.
+
+**Example personas** (you must customize these):
 
 | Email | Persona | Role | Tone |
 |-------|---------|------|------|
-| `scott@closespark.co` | Scott | Systems Engineer | Concise, technical, straight to the point |
-| `tracy@closespark.co` | Tracy | Technical Project Lead | Structured, slightly more formal |
-| `willa@closespark.co` | Willa | Automation Specialist | Friendly but still professional |
+| `persona1@yourdomain.com` | (Name) | Systems Engineer | Concise, technical, straight to the point |
+| `persona2@yourdomain.com` | (Name) | Technical Project Lead | Structured, slightly more formal |
+| `persona3@yourdomain.com` | (Name) | Automation Specialist | Friendly but still professional |
 
-Each email includes:
-- **CloseSpark branding** with Richmond, VA location
-- **Hourly rate**: $85/hr
-- **Calendly link**: https://calendly.com/closespark/technical-systems-consultation
-- **GitHub link**: https://github.com/closespark/
+The persona used is determined by the `email` field in your `SMTP_ACCOUNTS_JSON` configuration. Update `PERSONA_MAP` in `hubspot_scanner/email_generator.py` to match your SMTP inboxes.
+
+Each email includes company info (configured via the profile constant in `email_generator.py`):
+- **Company name and location**
+- **Hourly rate**
+- **Calendly link** for scheduling
+- **GitHub/portfolio link**
+
+See the [Configuration](#configuration) section for details on customizing these values.
 
 ## Email Variants
 
@@ -136,11 +144,11 @@ Technologies are scored by value/specialization (1-5 scale):
 ```json
 {
   "subject": "Shopify integration issue on sample-shop.com?",
-  "body": "Hi — I'm Scott from CloseSpark in Richmond, VA...",
+  "body": "Hi — I'm [Name] from [Company] in [Location]...",
   "main_tech": "Shopify",
   "supporting_techs": ["Stripe", "Klaviyo"],
-  "persona": "Scott",
-  "persona_email": "scott@closespark.co",
+  "persona": "PersonaName",
+  "persona_email": "persona@yourdomain.com",
   "persona_role": "Systems Engineer",
   "variant_id": "shopify_v1",
   "domain": "sample-shop.com"
@@ -152,7 +160,7 @@ Technologies are scored by value/specialization (1-5 scale):
 ```
 Subject: Shopify integration issue on sample-shop.com?
 
-Hi — I'm Scott from CloseSpark in Richmond, VA.
+Hi — I'm [Name] from [Company] in [Location].
 
 I saw that sample-shop.com is running Shopify + Stripe, Klaviyo, and I specialize in short-term technical fixes for stacks like yours.
 
@@ -160,14 +168,14 @@ I saw that sample-shop.com is running Shopify + Stripe, Klaviyo, and I specializ
 • Payment + analytics events not lining up (GA4, Klaviyo, etc.)
 • Small automation gaps that slow down the team
 
-Hourly: $85/hr, strictly short-term — no long-term commitment.
+Hourly: $XX/hr, strictly short-term — no long-term commitment.
 
 If it would help to have a specialist jump in, you can grab time here:
-https://calendly.com/closespark/technical-systems-consultation
+[Your Calendly Link]
 
-– Scott
-Systems Engineer, CloseSpark
-https://github.com/closespark/
+– [Name]
+[Role], [Company]
+[Your GitHub/Portfolio Link]
 ```
 
 ## Render Deployment
@@ -202,37 +210,37 @@ The system runs as a single daily cron job (`daily_worker.py`) that executes thr
 
 ### SMTP Configuration
 
-The `SMTP_ACCOUNTS_JSON` environment variable must use this format:
+The `SMTP_ACCOUNTS_JSON` environment variable configures your SMTP inboxes. Each inbox corresponds to a persona:
 
 ```json
 {
   "inboxes": [
     {
-      "email": "scott@closespark.co",
+      "email": "persona1@yourdomain.com",
       "smtp_host": "smtp.gmail.com",
       "smtp_port": 587,
-      "smtp_user": "scott@closespark.co",
+      "smtp_user": "persona1@yourdomain.com",
       "smtp_password": "your_app_password"
     },
     {
-      "email": "tracy@closespark.co",
+      "email": "persona2@yourdomain.com",
       "smtp_host": "smtp.gmail.com",
       "smtp_port": 587,
-      "smtp_user": "tracy@closespark.co",
+      "smtp_user": "persona2@yourdomain.com",
       "smtp_password": "your_app_password"
     },
     {
-      "email": "willa@closespark.co",
+      "email": "persona3@yourdomain.com",
       "smtp_host": "smtp.gmail.com",
       "smtp_port": 587,
-      "smtp_user": "willa@closespark.co",
+      "smtp_user": "persona3@yourdomain.com",
       "smtp_password": "your_app_password"
     }
   ]
 }
 ```
 
-**Important**: The `email` field determines which persona sends the email. Use the exact email addresses shown above to match the persona map.
+**Important**: The `email` field determines which persona sends the email. Update the `PERSONA_MAP` in `hubspot_scanner/email_generator.py` to match your configured email addresses.
 
 ### Supabase Setup
 
@@ -311,7 +319,7 @@ Set these in the Render dashboard:
 # Copy environment template
 cp .env.example .env
 
-# Edit .env with your credentials
+# Edit .env with your credentials (see Configuration section below)
 nano .env
 
 # Run all workers sequentially (same as Render cron)
@@ -326,28 +334,70 @@ python calendly_worker.py    # Sync Calendly bookings
 python scripts/smtp_test_send.py
 
 # Preview emails (QA tool)
-python scripts/preview_email.py --tech Shopify --from scott@closespark.co
+python scripts/preview_email.py --tech Shopify --from your-persona@yourdomain.com
 ```
+
+## Configuration
+
+Before deploying, you need to customize the following. The codebase contains default values that you should replace with your own:
+
+### 1. Company Profile (`hubspot_scanner/email_generator.py`)
+
+Update the `CLOSESPARK_PROFILE` constant with your company details (you can rename it if desired):
+
+```python
+CLOSESPARK_PROFILE = {
+    "company": "Your Company Name",
+    "location": "Your City, State",
+    "hourly_rate": "$XX/hr",
+    "github": "https://github.com/yourcompany/",
+    "calendly": "https://calendly.com/your-calendly-link",
+}
+```
+
+### 2. Persona Map (`hubspot_scanner/email_generator.py`)
+
+Update `PERSONA_MAP` to match your SMTP inbox email addresses. Each key should be an email address that matches one of your `SMTP_ACCOUNTS_JSON` inboxes:
+
+```python
+PERSONA_MAP = {
+    "persona1@yourdomain.com": {
+        "name": "FirstName",
+        "role": "Your Role",
+        "tone": "concise, technical, straight to the point",
+    },
+    "persona2@yourdomain.com": {
+        "name": "FirstName",
+        "role": "Your Role",
+        "tone": "structured, slightly more formal",
+    },
+    # Add more personas as needed
+}
+```
+
+### 3. Environment Variables
+
+See the Environment Variables section above for all required and optional settings. All secrets (API tokens, SMTP passwords) should be set as environment variables in Render, not hardcoded in code.
 
 ## Email Preview CLI
 
 The preview CLI lets you generate and view outreach emails without sending them — useful for QA and testing different persona/tech/variant combinations.
 
 ```bash
-# Basic preview with Shopify and Scott persona
-python scripts/preview_email.py --tech Shopify --from scott@closespark.co
+# Basic preview with Shopify and your persona
+python scripts/preview_email.py --tech Shopify --from persona@yourdomain.com
 
 # Preview with custom domain and supporting techs
-python scripts/preview_email.py --tech HubSpot --from tracy@closespark.co --domain acme-corp.com --supporting Salesforce Stripe
+python scripts/preview_email.py --tech HubSpot --from persona@yourdomain.com --domain acme-corp.com --supporting Salesforce Stripe
 
 # Generate multiple variants for comparison
-python scripts/preview_email.py --tech Klaviyo --from willa@closespark.co --count 3
+python scripts/preview_email.py --tech Klaviyo --from persona@yourdomain.com --count 3
 
 # List all available personas and technologies
 python scripts/preview_email.py --list
 
 # Output as JSON
-python scripts/preview_email.py --tech Shopify --from scott@closespark.co --json
+python scripts/preview_email.py --tech Shopify --from persona@yourdomain.com --json
 ```
 
 ## Per-Variant Analytics
@@ -504,7 +554,7 @@ email = generate_persona_outreach_email(
     domain="example.com",
     main_tech="Shopify",
     supporting_techs=["Stripe"],
-    from_email="scott@closespark.co",
+    from_email="persona@yourdomain.com",
     domain_history={
         "used_variant_ids": ["shopify_v1", "shopify_v2"],  # Will select shopify_v3
     },
@@ -526,15 +576,15 @@ variant = get_variant_for_tech("Shopify", exclude_variant_ids=["shopify_v1"])
 # Select variant with full suppression logic
 variant = select_variant_with_suppression(
     main_tech="Shopify",
-    from_email="scott@closespark.co",
+    from_email="persona@yourdomain.com",
     domain_history={"used_variant_ids": ["shopify_v1", "shopify_v2"]},
 )
 
 # Find an unused persona for a domain
 persona = get_unused_persona_for_domain(
     domain="example.com",
-    available_personas=["scott@closespark.co", "tracy@closespark.co", "willa@closespark.co"],
-    used_personas=["scott@closespark.co"],
+    available_personas=["persona1@yourdomain.com", "persona2@yourdomain.com", "persona3@yourdomain.com"],
+    used_personas=["persona1@yourdomain.com"],
 )
 ```
 
