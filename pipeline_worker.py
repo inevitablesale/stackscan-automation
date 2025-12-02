@@ -7,8 +7,8 @@ This is the Render worker entrypoint that:
 2. Calls Compass/Apify to scrape Google Places (max 1000 places)
 3. Extracts and normalizes domains
 4. Dedupes against Supabase domains_seen table
-5. Runs HubSpot scanning + email extraction
-6. Stores results in Supabase hubspot_scans table
+5. Runs technology scanning with Wappalyzer-style detection
+6. Stores results in Supabase tech_scans table
 
 The Apify Google Maps scraper is run asynchronously with polling to avoid
 HTTP connection timeouts on long-running scrape jobs. The run is started
@@ -20,15 +20,14 @@ Environment Variables Required:
     APIFY_TOKEN: Your Apify API token
 
 Optional Environment Variables:
-    SUPABASE_TABLE: Table for scan results (default: hubspot_scans)
+    SUPABASE_TABLE: Table for scan results (default: tech_scans)
     SUPABASE_DOMAIN_TABLE: Table for domain tracking (default: domains_seen)
     APIFY_ACTOR: Apify actor ID (default: compass/crawler-google-places)
     APIFY_MAX_PLACES: Max places to crawl per search (default: 1000)
     APIFY_POLL_INTERVAL: Seconds between Apify run status polls (default: 30)
     APIFY_RUN_TIMEOUT: Maximum seconds to wait for Apify run (default: 3600)
     CATEGORIES_FILE: Path to categories JSON (default: config/categories-250.json)
-    SCANNER_MAX_EMAIL_PAGES: Max pages to crawl for emails (default: 10)
-    SCANNER_DISABLE_EMAILS: Set to 'true' to skip email extraction
+    SCANNER_DISABLE_EMAIL_GENERATION: Set to 'true' to skip email generation
     CATEGORY_OVERRIDE: Override the daily category selection
     LOG_LEVEL: Logging level (default: INFO)
 """
@@ -43,7 +42,7 @@ from datetime import date
 from apify_client import ApifyClient
 from supabase import create_client
 
-from hubspot_scanner import scan_domain
+from hubspot_scanner import scan_technologies
 
 
 # ---------- LOGGING SETUP ----------
@@ -81,7 +80,7 @@ logger = setup_logging()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
-SUPABASE_TABLE = os.getenv("SUPABASE_TABLE", "hubspot_scans")
+SUPABASE_TABLE = os.getenv("SUPABASE_TABLE", "tech_scans")
 SUPABASE_DOMAIN_TABLE = os.getenv("SUPABASE_DOMAIN_TABLE", "domains_seen")
 
 APIFY_TOKEN = os.getenv("APIFY_TOKEN")
@@ -91,8 +90,7 @@ APIFY_POLL_INTERVAL = int(os.getenv("APIFY_POLL_INTERVAL", "30"))  # seconds
 APIFY_RUN_TIMEOUT = int(os.getenv("APIFY_RUN_TIMEOUT", "3600"))  # seconds (1 hour default)
 
 CATEGORIES_FILE = os.getenv("CATEGORIES_FILE", "config/categories-250.json")
-SCANNER_MAX_EMAIL_PAGES = int(os.getenv("SCANNER_MAX_EMAIL_PAGES", "10"))
-SCANNER_DISABLE_EMAILS = os.getenv("SCANNER_DISABLE_EMAILS", "false").lower() == "true"
+SCANNER_DISABLE_EMAIL_GENERATION = os.getenv("SCANNER_DISABLE_EMAIL_GENERATION", "false").lower() == "true"
 
 
 def log_config():
@@ -110,8 +108,7 @@ def log_config():
     logger.info(f"  APIFY_POLL_INTERVAL: {APIFY_POLL_INTERVAL} seconds")
     logger.info(f"  APIFY_RUN_TIMEOUT: {APIFY_RUN_TIMEOUT} seconds")
     logger.info(f"  CATEGORIES_FILE: {CATEGORIES_FILE}")
-    logger.info(f"  SCANNER_MAX_EMAIL_PAGES: {SCANNER_MAX_EMAIL_PAGES}")
-    logger.info(f"  SCANNER_DISABLE_EMAILS: {SCANNER_DISABLE_EMAILS}")
+    logger.info(f"  SCANNER_DISABLE_EMAIL_GENERATION: {SCANNER_DISABLE_EMAIL_GENERATION}")
     logger.info("=" * 60)
 
 
@@ -423,25 +420,24 @@ def filter_new_domains(supabase, domains: list[str], category: str) -> list[str]
     return new_domains
 
 
-# ---------- HUBSPOT SCAN + SAVE ----------
+# ---------- TECHNOLOGY SCAN + SAVE ----------
 
 
 def save_scan_result(supabase, result: dict, category: str) -> None:
     """
-    Save a scan result to Supabase.
+    Save a technology scan result to Supabase.
 
     Args:
         supabase: Supabase client instance
-        result: Scan result dictionary
+        result: Scan result dictionary from scan_technologies
         category: The business category
     """
     row = {
         "domain": result["domain"],
-        "hubspot_detected": result["hubspot_detected"],
-        "confidence_score": result.get("confidence_score", 0),
-        "portal_ids": result.get("portal_ids", []),
-        "hubspot_signals": result.get("hubspot_signals", []),
-        "emails": result.get("emails", []),
+        "technologies": result.get("technologies", []),
+        "scored_technologies": result.get("scored_technologies", []),
+        "top_technology": result.get("top_technology"),
+        "generated_email": result.get("generated_email"),
         "category": category,
         "error": result.get("error"),
     }
@@ -449,9 +445,9 @@ def save_scan_result(supabase, result: dict, category: str) -> None:
     logger.debug(f"Saved scan result for {result['domain']} to {SUPABASE_TABLE}")
 
 
-def run_hubspot_scans(supabase, domains: list[str], category: str) -> list[dict]:
+def run_technology_scans(supabase, domains: list[str], category: str) -> list[dict]:
     """
-    Run HubSpot scans on all domains and save results.
+    Run technology scans on all domains and save results.
 
     Args:
         supabase: Supabase client instance
@@ -462,16 +458,15 @@ def run_hubspot_scans(supabase, domains: list[str], category: str) -> list[dict]
         List of scan result dictionaries
     """
     logger.info("=" * 60)
-    logger.info("STEP: HUBSPOT SCANNING")
+    logger.info("STEP: TECHNOLOGY SCANNING")
     logger.info("=" * 60)
-    logger.info(f"Starting HubSpot scans for {len(domains)} domains")
-    logger.info(f"Email crawling: {'DISABLED' if SCANNER_DISABLE_EMAILS else 'ENABLED'}")
-    logger.info(f"Max email pages per domain: {SCANNER_MAX_EMAIL_PAGES}")
+    logger.info(f"Starting technology scans for {len(domains)} domains")
+    logger.info(f"Email generation: {'DISABLED' if SCANNER_DISABLE_EMAIL_GENERATION else 'ENABLED'}")
     
     results = []
-    hubspot_detected_count = 0
+    tech_detected_count = 0
+    email_generated_count = 0
     error_count = 0
-    total_emails_found = 0
     scan_start_time = time.time()
     
     for idx, domain in enumerate(domains, start=1):
@@ -479,31 +474,34 @@ def run_hubspot_scans(supabase, domains: list[str], category: str) -> list[dict]
         logger.info(f"[{idx}/{len(domains)}] Scanning: {domain}")
         
         try:
-            # Run the HubSpot scanner
-            result = scan_domain(
+            # Run the technology scanner
+            result = scan_technologies(
                 domain,
-                crawl_emails=not SCANNER_DISABLE_EMAILS,
-                max_pages=SCANNER_MAX_EMAIL_PAGES,
+                generate_email=not SCANNER_DISABLE_EMAIL_GENERATION,
             )
 
-            # Convert DetectionResult to dict
+            # Convert TechScanResult to dict
             result_dict = result.to_dict()
             results.append(result_dict)
             save_scan_result(supabase, result_dict, category)
             
             domain_elapsed = time.time() - domain_start_time
 
-            if result.hubspot_detected:
-                hubspot_detected_count += 1
-                email_count = len(result.emails) if result.emails else 0
-                total_emails_found += email_count
-                logger.info(f"  ✓ HubSpot DETECTED (confidence: {result.confidence_score}%, emails: {email_count}) [{domain_elapsed:.1f}s]")
-                if result.portal_ids:
-                    logger.info(f"    Portal IDs: {result.portal_ids}")
-                if result.emails:
-                    logger.info(f"    Emails: {', '.join(result.emails)}")
+            if result.technologies:
+                tech_detected_count += 1
+                tech_count = len(result.technologies)
+                has_email = result.generated_email is not None
+                if has_email:
+                    email_generated_count += 1
+                top_tech_name = result.top_technology.get("name", "N/A") if result.top_technology else "N/A"
+                logger.info(f"  ✓ {tech_count} technologies detected (top: {top_tech_name}, email: {'Yes' if has_email else 'No'}) [{domain_elapsed:.1f}s]")
+                if result.technologies[:5]:
+                    logger.info(f"    Technologies: {', '.join(result.technologies[:5])}")
             else:
-                logger.info(f"  ✗ HubSpot not detected [{domain_elapsed:.1f}s]")
+                if result.error:
+                    logger.info(f"  ✗ Scan error: {result.error} [{domain_elapsed:.1f}s]")
+                else:
+                    logger.info(f"  ✗ No technologies detected [{domain_elapsed:.1f}s]")
 
         except Exception as e:
             error_count += 1
@@ -511,11 +509,10 @@ def run_hubspot_scans(supabase, domains: list[str], category: str) -> list[dict]
             logger.error(f"  ✗ SCAN FAILED for {domain}: {e} [{domain_elapsed:.1f}s]")
             err_result = {
                 "domain": domain,
-                "hubspot_detected": False,
-                "confidence_score": 0,
-                "portal_ids": [],
-                "hubspot_signals": [],
-                "emails": [],
+                "technologies": [],
+                "scored_technologies": [],
+                "top_technology": None,
+                "generated_email": None,
                 "error": str(e),
             }
             save_scan_result(supabase, err_result, category)
@@ -531,11 +528,11 @@ def run_hubspot_scans(supabase, domains: list[str], category: str) -> list[dict]
 
     total_elapsed = time.time() - scan_start_time
     logger.info("-" * 60)
-    logger.info(f"HubSpot scanning completed in {total_elapsed:.1f} seconds")
+    logger.info(f"Technology scanning completed in {total_elapsed:.1f} seconds")
     logger.info(f"  Total domains scanned: {len(domains)}")
-    logger.info(f"  HubSpot detected: {hubspot_detected_count}")
+    logger.info(f"  Domains with technologies: {tech_detected_count}")
+    logger.info(f"  Emails generated: {email_generated_count}")
     logger.info(f"  Scan errors: {error_count}")
-    logger.info(f"  Total emails found: {total_emails_found}")
     
     return results
 
@@ -588,13 +585,13 @@ def main():
             logger.info("Pipeline completed successfully (no work needed)")
             return
 
-        # Run HubSpot scans
-        results = run_hubspot_scans(supabase, new_domains, category)
+        # Run technology scans
+        results = run_technology_scans(supabase, new_domains, category)
 
         # Print summary
         pipeline_elapsed = time.time() - pipeline_start_time
-        hubspot_count = sum(1 for r in results if r.get("hubspot_detected"))
-        email_count = sum(len(r.get("emails", [])) for r in results)
+        tech_count = sum(1 for r in results if r.get("technologies"))
+        email_count = sum(1 for r in results if r.get("generated_email"))
         error_count = sum(1 for r in results if r.get("error"))
 
         logger.info("=" * 60)
@@ -604,8 +601,8 @@ def main():
         logger.info(f"  Total time: {pipeline_elapsed:.1f} seconds")
         logger.info(f"  Domains from Google Places: {len(domains)}")
         logger.info(f"  New domains scanned: {len(new_domains)}")
-        logger.info(f"  HubSpot detected: {hubspot_count} ({hubspot_count/len(new_domains)*100:.1f}% detection rate)")
-        logger.info(f"  Emails extracted: {email_count}")
+        logger.info(f"  Domains with technologies: {tech_count} ({tech_count/len(new_domains)*100:.1f}% detection rate)")
+        logger.info(f"  Emails generated: {email_count}")
         logger.info(f"  Scan errors: {error_count}")
         logger.info("=" * 60)
         logger.info("Pipeline worker finished successfully!")
