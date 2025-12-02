@@ -176,9 +176,9 @@ This repository includes a complete Render deployment kit for running a fully au
 
 ### Architecture
 
-The system consists of two workers running as daily cron jobs:
+The system runs as a single daily cron job (`daily_worker.py`) that executes three workers sequentially:
 
-1. **Pipeline Worker** (`pipeline_worker.py`) - Runs at 6:00 AM UTC
+1. **Pipeline Worker** (`pipeline_worker.py`)
    - Scrapes Google Places for one business category (rotates through 250 categories)
    - Extracts and normalizes domains
    - Deduplicates against Supabase history
@@ -187,12 +187,18 @@ The system consists of two workers running as daily cron jobs:
    - Generates persona-based outreach emails with variant tracking
    - Stores results in Supabase
 
-2. **Outreach Worker** (`outreach_worker.py`) - Runs at 2:00 PM UTC
+2. **Outreach Worker** (`outreach_worker.py`)
    - Pulls leads with detected technologies and valid emails
    - Rotates through SMTP inboxes (each inbox = different persona)
    - Generates persona-specific emails based on detected tech stack
    - Sends personalized outreach emails (350-500/day)
    - Marks leads as emailed in Supabase
+
+3. **Calendly Sync Worker** (`calendly_worker.py`)
+   - Fetches recent scheduled events from Calendly API
+   - Matches invitee emails to leads in Supabase
+   - Updates lead records with booking status
+   - Saves booking records for conversion analytics
 
 ### SMTP Configuration
 
@@ -308,14 +314,13 @@ cp .env.example .env
 # Edit .env with your credentials
 nano .env
 
-# Run pipeline worker
-python pipeline_worker.py
+# Run all workers sequentially (same as Render cron)
+python daily_worker.py
 
-# Run outreach worker
-python outreach_worker.py
-
-# Run Calendly sync worker
-python calendly_worker.py
+# Or run individual workers separately:
+python pipeline_worker.py    # Scan domains
+python outreach_worker.py    # Send emails
+python calendly_worker.py    # Sync Calendly bookings
 
 # Test SMTP sending
 python scripts/smtp_test_send.py
