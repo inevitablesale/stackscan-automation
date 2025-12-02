@@ -42,7 +42,7 @@ services:
         value: "50"
       - key: SMTP_SEND_DELAY_SECONDS
         value: "4"
-      # Calendly Configuration (optional - sync will be skipped if not set)
+      # Calendly Configuration (optional - leave CALENDLY_API_TOKEN empty to skip sync)
       - key: CALENDLY_API_TOKEN
         sync: false
       - key: CALENDLY_SYNC_TABLE

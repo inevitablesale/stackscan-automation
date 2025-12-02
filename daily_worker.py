@@ -103,6 +103,9 @@ def run_calendly_worker() -> bool:
         run_sync()
         logger.info("Calendly sync worker completed successfully")
         return True
+    except ImportError as e:
+        logger.warning(f"Calendly module not available, skipping sync: {e}")
+        return True
     except Exception as e:
         logger.error(f"Calendly sync worker failed: {e}")
         logger.exception("Full traceback:")
