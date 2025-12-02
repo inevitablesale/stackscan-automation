@@ -1,28 +1,22 @@
 {
   "description": "Sample SMTP inbox configuration for outreach automation",
-  "note": "Replace with your actual email addresses and Gmail app passwords",
-  "format_note": "The 'email' field determines which persona sends the email. Update PERSONA_MAP in hubspot_scanner/email_generator.py to match these.",
+  "how_to_get": "Export from Zapmail: Settings > Inboxes > Export Configuration, or configure manually for any SMTP provider",
+  "note": "Replace with your actual email addresses and SMTP credentials",
+  "format_note": "The 'email' field determines which persona sends the email. Set PERSONA_MAP_JSON env var to match these emails.",
   "inboxes": [
     {
-      "email": "persona1@yourdomain.com",
+      "email": "john@yourdomain.com",
       "smtp_host": "smtp.gmail.com",
       "smtp_port": 587,
-      "smtp_user": "persona1@yourdomain.com",
-      "smtp_password": "your_app_password_here"
+      "smtp_user": "john@yourdomain.com",
+      "smtp_password": "your_gmail_app_password"
     },
     {
-      "email": "persona2@yourdomain.com",
+      "email": "jane@yourdomain.com",
       "smtp_host": "smtp.gmail.com",
       "smtp_port": 587,
-      "smtp_user": "persona2@yourdomain.com",
-      "smtp_password": "your_app_password_here"
-    },
-    {
-      "email": "persona3@yourdomain.com",
-      "smtp_host": "smtp.gmail.com",
-      "smtp_port": 587,
-      "smtp_user": "persona3@yourdomain.com",
-      "smtp_password": "your_app_password_here"
+      "smtp_user": "jane@yourdomain.com",
+      "smtp_password": "your_gmail_app_password"
     }
   ]
 }
