@@ -6,6 +6,80 @@ ProspectPilot is a fully automated cold email engine and lead generation system 
 
 ---
 
+## ⭐ Packages & Pricing
+
+### ⭐ PACKAGE 1 — Self-Serve Codebase (No Support)  
+**$750 — one-time purchase**
+
+**Includes:**
+
+- The full ProspectPilot codebase  
+- Setup documentation (Render + Supabase + ENV)  
+- Default personas  
+- Default categories  
+- Default email variants  
+
+**Does NOT include:**
+
+- Deployment help  
+- Troubleshooting  
+- Strategy  
+- Support  
+- Customizations  
+
+**Support after delivery:** 0 hours
+
+---
+
+### ⭐ PACKAGE 2 — Done-For-You Deployment (No Customization)  
+**$1,800 — one-time setup**
+
+**Includes:**
+
+- Everything in Package 1  
+- You deploy it to their Render account  
+- You configure their Supabase environment  
+- You set up all environment variables  
+- You run a test (scrape → enrich → outreach)  
+- You provide a one-time 10–15 min handoff video  
+
+**Does NOT include:**
+
+- Custom personas  
+- Custom logic  
+- Category changes  
+- CRM mapping  
+- Ongoing support  
+- Feature enhancements  
+
+**Support after delivery:** 0 hours
+
+---
+
+### ⭐ OPTIONAL ADD-ON — Customizations  
+**$85/hr**
+
+Only available after purchasing Package 1 or Package 2.
+
+**Examples of billable customizations:**
+
+- Custom personas  
+- Editing outreach logic  
+- Adjusting scoring rules  
+- Category changes  
+- Basic HubSpot/Salesforce field mapping  
+- Minor modifications to existing workers
+
+---
+
+### Interested?
+
+**Contact us to learn more about licensing ProspectPilot for your agency.**
+
+📧 Email: **christabb@gmail.com**
+
+---
+
 ## Why Agencies Choose ProspectPilot
 
 **Stop hunting for leads. Start closing them.**
@@ -33,22 +107,23 @@ ProspectPilot is purpose-built for agencies that offer:
 
 ### 📈 Runs Daily, Autonomously
 
-Once configured, ProspectPilot runs every day without any manual intervention:
+Once configured, ProspectPilot runs automatically with each stage executing sequentially:
 
-1. **Morning**: Discovers and scans new businesses from Google Maps
-2. **Midday**: Sends personalized cold emails through warmed up mailboxes
-3. **Evening**: Syncs calendar bookings and updates analytics
+1. **Discovery**: Discovers and scans new businesses from Google Maps
+2. **Outreach**: Sends personalized cold emails through warmed up mailboxes
+3. **Tracking**: Syncs calendar bookings and updates analytics
 
 Your pipeline fills itself while you sleep.
 
 ### 💰 Low Monthly Running Cost
 
-Once set up, ProspectPilot costs approximately **$50–100/month** to run, depending on volume:
+Once set up, ProspectPilot is very affordable to run:
 
-- **Render hosting**: ~$25–50/month
-- **Supabase database**: Free tier or ~$25/month
-- **Google Maps API**: ~$0–25/month (depending on searches)
-- **Email sending**: Included with your warmed up mailboxes
+- **Render hosting**: Free
+- **Supabase database**: Free
+- **Google Maps API**: ~$4 per 1,000 businesses
+- **Email accounts**: 3 for $35
+- **OpenAI**: ~$5/month
 
 ---
 
@@ -107,81 +182,6 @@ Purchasing includes:
 - Persona and category libraries
 - Warmed up email mailbox setup instructions
 - Priority support during onboarding
-
----
-
-## ⭐ Packages & Pricing
-
-### ⭐ PACKAGE 1 — Self-Serve Codebase (No Support)  
-**$750 — one-time purchase**
-
-**Includes:**
-
-- The full ProspectPilot codebase  
-- Setup documentation (Render + Supabase + ENV)  
-- Default personas  
-- Default categories  
-- Default email variants  
-
-**Does NOT include:**
-
-- Deployment help  
-- Troubleshooting  
-- Strategy  
-- Support  
-- Customizations  
-
-**Your time after purchase:** 0 hours.
-
----
-
-### ⭐ PACKAGE 2 — Done-For-You Deployment (No Customization)  
-**$1,800 — one-time setup**
-
-**Includes:**
-
-- Everything in Package 1  
-- You deploy it to their Render account  
-- You configure their Supabase environment  
-- You set up all environment variables  
-- You run a test (scrape → enrich → outreach)  
-- You provide a one-time 10–15 min handoff video  
-
-**Does NOT include:**
-
-- Custom personas  
-- Custom logic  
-- Category changes  
-- CRM mapping  
-- Ongoing support  
-- Feature enhancements  
-
-**Your time required:** 3–5 hours total  
-**Support after delivery:** 0 hours
-
----
-
-### ⭐ OPTIONAL ADD-ON — Customizations  
-**$85/hr**
-
-Only available after purchasing Package 1 or Package 2.
-
-**Examples of billable customizations:**
-
-- Custom personas  
-- Editing outreach logic  
-- Adjusting scoring rules  
-- Category changes  
-- Basic HubSpot/Salesforce field mapping  
-- Minor modifications to existing workers
-
----
-
-### Interested?
-
-**Contact us to learn more about licensing ProspectPilot for your agency.**
-
-📧 Email: **christabb@gmail.com**
 
 ---
 
