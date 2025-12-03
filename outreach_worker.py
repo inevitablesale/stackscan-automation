@@ -274,6 +274,17 @@ def send_email_smtp(
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
+    # Log the full email being sent
+    from_email = smtp_conf.get("email", smtp_conf.get("user", "unknown"))
+    logger.info(
+        "SENDING EMAIL\nFrom: %s\nTo: %s\nSubject: %s\n%s\n\n%s",
+        from_email,
+        to_email,
+        subject,
+        "-" * 80,
+        body,
+    )
+
     context = ssl.create_default_context()
 
     try:

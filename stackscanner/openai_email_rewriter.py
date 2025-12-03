@@ -139,6 +139,15 @@ def rewrite_email_with_openai(
         new_subject = str(new_subject).strip()
         new_body = str(new_body).strip()
 
+        # Log the generated email template
+        logger.info(
+            "Email template generated for domain=%s, primary_email=%s:\n%s\n%s",
+            context.get("domain", "unknown"),
+            context.get("persona_email", "unknown"),
+            "-" * 60,
+            new_body,
+        )
+
         meta["rewrite_used"] = True
         meta["rewrite_reason"] = "success"
         return new_subject, new_body, meta
