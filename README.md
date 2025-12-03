@@ -1,8 +1,8 @@
 # 🚀 ProspectPilot
 
-**Autonomous AI-Powered Outbound Engine for Technical Consultants, Agencies & RevOps Teams**
+**Autonomous AI-Powered Cold Email Engine for Technical Consultants, Agencies & RevOps Teams**
 
-ProspectPilot is a fully automated lead generation and outreach system designed for agencies that provide technical services. The platform discovers businesses, identifies their technology stacks, generates personalized outreach, and tracks conversions — all on autopilot.
+ProspectPilot is a fully automated cold email engine and lead generation system designed for agencies that provide technical services. The platform discovers businesses via Google Maps, identifies their technology stacks, generates personalized cold email outreach, and tracks conversions — all on autopilot.
 
 ---
 
@@ -14,11 +14,11 @@ ProspectPilot handles the entire top-of-funnel process so your team can focus on
 
 ### ✅ What ProspectPilot Does
 
-- **Discovers businesses** in your target verticals (professional services, e-commerce, healthcare, and more)
+- **Discovers businesses via Google Maps** in your target verticals (professional services, e-commerce, healthcare, and more)
 - **Analyzes each website's tech stack** — detecting 40+ technologies including CRMs, CMSs, payment systems, and marketing tools
 - **Extracts real contact emails** — filtering out generic addresses to find decision-makers
-- **Generates personalized outreach** tailored to each prospect's specific technology environment
-- **Sends emails automatically** through a rotating inbox system optimized for deliverability
+- **Generates personalized cold email outreach** tailored to each prospect's specific technology environment
+- **Sends emails automatically** through warmed up email mailboxes optimized for deliverability
 - **Tracks meeting bookings** and ties them back to specific campaigns and messaging variants
 
 ### 💡 Built for Technical Agencies
@@ -35,22 +35,31 @@ ProspectPilot is purpose-built for agencies that offer:
 
 Once configured, ProspectPilot runs every day without any manual intervention:
 
-1. **Morning**: Discovers and scans new businesses
-2. **Midday**: Sends personalized outreach emails
+1. **Morning**: Discovers and scans new businesses from Google Maps
+2. **Midday**: Sends personalized cold emails through warmed up mailboxes
 3. **Evening**: Syncs calendar bookings and updates analytics
 
 Your pipeline fills itself while you sleep.
+
+### 💰 Low Monthly Running Cost
+
+Once set up, ProspectPilot costs approximately **$50–100/month** to run, depending on volume:
+
+- **Render hosting**: ~$25–50/month
+- **Supabase database**: Free tier or ~$25/month
+- **Google Maps API**: ~$0–25/month (depending on searches)
+- **Email sending**: Included with your warmed up mailboxes
 
 ---
 
 ## How It Works
 
-ProspectPilot uses a three-stage automated pipeline:
+ProspectPilot uses a three-stage automated cold email pipeline:
 
 | Stage | What Happens |
 |-------|--------------|
-| **Discovery** | Finds businesses by category and scans their websites for technology signals |
-| **Outreach** | Generates and sends persona-based emails through rotating SMTP inboxes |
+| **Discovery** | Finds businesses via Google Maps by category and scans their websites for technology signals |
+| **Outreach** | Generates and sends persona-based cold emails through warmed up SMTP mailboxes |
 | **Tracking** | Matches calendar bookings to sent emails for full-funnel visibility |
 
 Each stage is fully configurable, allowing you to target specific industries, customize messaging, and track what's working.
@@ -59,10 +68,12 @@ Each stage is fully configurable, allowing you to target specific industries, cu
 
 ## Key Features
 
+- **Google Maps Business Discovery** — Automatically finds businesses in your target categories and locations
 - **Multi-Technology Detection** — Identifies 40+ technologies across marketing, e-commerce, analytics, and infrastructure categories
 - **Technology Scoring** — Prioritizes leads based on enterprise value and your service specializations
 - **Persona-Based Messaging** — Create multiple sender personas with distinct tones and roles for A/B testing
 - **Email Variant Testing** — Each technology has multiple message variants for real conversion optimization
+- **Warmed Up Mailboxes** — Uses pre-warmed email accounts for optimal deliverability
 - **Smart Deduplication** — Never contacts the same business twice and rotates through target categories
 - **Full Analytics** — Track sends, opens, and bookings by persona, variant, and technology
 
@@ -86,7 +97,7 @@ ProspectPilot detects and scores technologies across these categories:
 
 ## Getting Started
 
-ProspectPilot is available as a **licensed product for agencies**.
+ProspectPilot is available as a **licensed cold email engine for agencies**.
 
 Purchasing includes:
 
@@ -94,14 +105,83 @@ Purchasing includes:
 - Database schemas and configuration templates
 - Deployment guides for cloud hosting (Render, AWS, etc.)
 - Persona and category libraries
-- Email deliverability setup instructions
+- Warmed up email mailbox setup instructions
 - Priority support during onboarding
+
+---
+
+## ⭐ Packages & Pricing
+
+### ⭐ PACKAGE 1 — Self-Serve Codebase (No Support)  
+**$750 — one-time purchase**
+
+**Includes:**
+
+- The full ProspectPilot codebase  
+- Setup documentation (Render + Supabase + ENV)  
+- Default personas  
+- Default categories  
+- Default email variants  
+
+**Does NOT include:**
+
+- Deployment help  
+- Troubleshooting  
+- Strategy  
+- Support  
+- Customizations  
+
+**Your time after purchase:** 0 hours.
+
+---
+
+### ⭐ PACKAGE 2 — Done-For-You Deployment (No Customization)  
+**$1,800 — one-time setup**
+
+**Includes:**
+
+- Everything in Package 1  
+- You deploy it to their Render account  
+- You configure their Supabase environment  
+- You set up all environment variables  
+- You run a test (scrape → enrich → outreach)  
+- You provide a one-time 10–15 min handoff video  
+
+**Does NOT include:**
+
+- Custom personas  
+- Custom logic  
+- Category changes  
+- CRM mapping  
+- Ongoing support  
+- Feature enhancements  
+
+**Your time required:** 3–5 hours total  
+**Support after delivery:** 0 hours
+
+---
+
+### ⭐ OPTIONAL ADD-ON — Customizations  
+**$85/hr**
+
+Only available after purchasing Package 1 or Package 2.
+
+**Examples of billable customizations:**
+
+- Custom personas  
+- Editing outreach logic  
+- Adjusting scoring rules  
+- Category changes  
+- Basic HubSpot/Salesforce field mapping  
+- Minor modifications to existing workers
+
+---
 
 ### Interested?
 
 **Contact us to learn more about licensing ProspectPilot for your agency.**
 
-📧 Email: **hello@closespark.co**
+📧 Email: **christabb@gmail.com**
 
 ---
 
