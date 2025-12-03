@@ -33,8 +33,16 @@ One of the biggest strengths of ProspectPilot is how cost-efficient the entire p
 | **Apify (Google Places data)** | $4 per 1,000 businesses — Even scraping 150 businesses per week costs under $1/month |
 | **Render hosting** | FREE — Runs daily cron jobs and background workers at zero cost |
 | **Calendly sync** | FREE — All meeting analytics pull from the free plan |
-| **OpenAI rewriting (optional)** | ~$1–$5/month — $5 in API credits powers 80–200 rewritten emails |
+| **OpenAI rewriting (optional)** | ~$1–$5/month — $5 in API credits powers 3,000–6,000 rewritten emails (see table below) |
 | **Zapmail pre-warmed inboxes** | $33 total — Includes 1 domain, 3 fully pre-warmed mailboxes, SMTP credentials |
+
+#### OpenAI Cost Breakdown: Emails per $5 Credit (300-word template)
+
+| Scenario | Estimated Cost per Rewrite | Estimated Emails per US $5 |
+|----------|---------------------------|---------------------------|
+| GPT-3.5 Turbo – light prompt, concise email (≈400 tokens total) | ~$0.0008 | ≈6,000 |
+| GPT-3.5 Turbo – moderate prompt/context + 300-word email (≈600 tokens total) | ~$0.0012 | ≈4,000 |
+| GPT-3.5 Turbo – longer prompt + full email + metadata/context (≈800 tokens total) | ~$0.0016 | ≈3,000 |
 
 With ProspectPilot's rotation engine, 3 inboxes can handle **2,700–3,600 outbound emails/month**.
 
